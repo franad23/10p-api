@@ -1,7 +1,27 @@
 import { Request, Response } from "express";
 import { productUseCases } from "../useCases/product.useCases";
+import { Product } from "../data/products";
 
 const productControllers = {
+  list: (req, res) => {
+    try {
+      const productsFound = productUseCases.list();
+      res.status(200).json(productsFound);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
+  create: (req, res) => {
+    try {
+      const product: Product = req.body;
+      productUseCases.create(product);
+      res.status(200).json({
+        message: "Producto creado con exito",
+      });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
   getById: (req, res) => {
     try {
       const id = req.params.id;

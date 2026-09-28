@@ -2,6 +2,9 @@ import { Product } from "../data/products";
 import { productsServices } from "../services/product.service";
 
 const productUseCases = {
+  list: (): Product[] => {
+    return productsServices.list();
+  },
   getById: (id: number): Product => {
     const productFound = productsServices.getById(id);
     if (!productFound) {

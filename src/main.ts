@@ -5,8 +5,10 @@ const app = express();
 
 app.use(express.json());
 
+app.post("/product", productControllers.create);
 app.delete("/product/:id", productControllers.delete);
 app.get("/product/:id", productControllers.getById);
+app.get("/product", productControllers.list);
 
 const PORT = 3000;
 
