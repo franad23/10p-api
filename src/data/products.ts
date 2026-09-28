@@ -24,7 +24,7 @@ const productsData: Product[] = [
     name: "Pantalon largo",
     currency: CURRENCY.USD,
     price: 100,
-    stock: 100,
+    stock: 0,
   },
 ];
 

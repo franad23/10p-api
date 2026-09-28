@@ -6,9 +6,7 @@ const app = express();
 app.use(express.json());
 
 app.delete("/product/:id", productControllers.delete);
-app.get("/", (req, res) => {
-  res.send("Hola mundoooooo");
-});
+app.get("/product/:id", productControllers.getById);
 
 const PORT = 3000;
 

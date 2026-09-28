@@ -2,6 +2,13 @@ import { Product } from "../data/products";
 import { productsServices } from "../services/product.service";
 
 const productUseCases = {
+  getById: (id: number): Product => {
+    const productFound = productsServices.getById(id);
+    if (!productFound) {
+      throw new Error("PRODUCT-NOT-FOUND");
+    }
+    return productFound;
+  },
   create: (product: Product) => {
     productsServices.create(product);
   },
