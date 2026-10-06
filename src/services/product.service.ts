@@ -1,22 +1,24 @@
-import { Product, productsData } from "../data/products";
+// import { Product, CURRENCY } from "../data/products";
+
+import { CURRENCY, Product, ProductModel } from "../models/product.model";
 
 const productsServices = {
-  create: (product: Product) => {
-    productsData.push(product);
+  create: async (product: Product) => {
+    await ProductModel.create(product);
   },
-  getById: (id: number): Product | null => {
-    const productFound = productsData.find((product) => product.id === id);
-    if (!productFound) {
-      return null;
-    }
-    return productFound;
+  getById: async (id: string): Promise<Product | null> => {
+    return await ProductModel.findById(id);
   },
-  list: (): Product[] => {
-    return productsData;
+  update: async (id: string, product: Product) => {
+    await ProductModel.findByIdAndUpdate(id, product);
   },
-  deleteById: (id: number) => {
-    productsData.filter((product) => product.id !== id);
-  },
+  // list: (): Product[] => {
+  //   return productsData;
+  // },
+  // deleteById: (id: number) => {
+  //   const newData = productsData.filter((product) => product.id !== id);
+  //   productsData = newData;
+  // },
 };
 
 export { productsServices };

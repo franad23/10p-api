@@ -1,27 +1,33 @@
-import { Product } from "../data/products";
+import { Product } from "../models/product.model";
 import { productsServices } from "../services/product.service";
 
 const productUseCases = {
-  getById: (id: number): Product => {
-    const productFound = productsServices.getById(id);
+  // list: (): Product[] => {
+  //   return productsServices.list();
+  // },
+  getById: async (id: string): Promise<Product> => {
+    const productFound = await productsServices.getById(id);
     if (!productFound) {
       throw new Error("PRODUCT-NOT-FOUND");
     }
     return productFound;
   },
-  create: (product: Product) => {
-    productsServices.create(product);
+  create: async (product: Product) => {
+    await productsServices.create(product);
   },
-  deleteById: (id: number) => {
-    const productFound = productsServices.getById(id);
-    if (!productFound) {
-      throw new Error("PRODUCT-NOT-FOUND");
-    }
-    if (productFound.stock) {
-      throw new Error("PRODUCT-STOCKED");
-    }
-    productsServices.deleteById(id);
+  update: async (id: string, product: Product) => {
+    await productsServices.update(id, product);
   },
+  // deleteById: (id: number) => {
+  //   const productFound = productsServices.getById(id);
+  //   if (!productFound) {
+  //     throw new Error("PRODUCT-NOT-FOUND");
+  //   }
+  //   if (productFound.stock) {
+  //     throw new Error("PRODUCT-STOCKED");
+  //   }
+  //   productsServices.deleteById(id);
+  // },
 };
 
 export { productUseCases };
