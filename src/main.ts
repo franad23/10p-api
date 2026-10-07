@@ -2,10 +2,14 @@ import express from "express";
 import { productControllers } from "./controllers/product.controller";
 import { validateProductBody } from "./middleware/product.middleware";
 import { connectDB } from "./config/connectDb";
+import { userControllers } from "./controllers/user.controller";
 
 const app = express();
 
 app.use(express.json());
+
+app.post("/user", userControllers.create);
+app.post("/user/login", userControllers.checkCredentials);
 
 app.post("/product", validateProductBody, productControllers.create);
 // app.delete("/product/:id", productControllers.delete);
