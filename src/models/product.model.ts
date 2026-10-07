@@ -1,7 +1,6 @@
 import { model, Schema } from "mongoose";
 
 interface Product {
-  id: number;
   name: string;
   price: number;
   currency: CURRENCY;
