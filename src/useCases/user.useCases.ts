@@ -1,6 +1,9 @@
 import { User } from "../models/user.model";
 import { userServices } from "../services/user.service";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 const userUseCases = {
   create: async (user: User) => {
@@ -28,6 +31,15 @@ const userUseCases = {
     if (!checkPassword) {
       throw new Error("INVALID-CREDENTIALS");
     }
+    const token = jwt.sign(
+      {
+        name: userExists.name,
+        lastname: userExists.lastname,
+        email: userExists.email,
+      },
+      process.env.JWT_KEY as string,
+    );
+    return token;
   },
 };
 

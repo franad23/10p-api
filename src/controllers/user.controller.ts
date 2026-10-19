@@ -26,9 +26,10 @@ const userControllers = {
   checkCredentials: async (req: Request, res: Response) => {
     try {
       const userCredencials = req.body;
-      await userUseCases.checkCredentials(userCredencials);
+      const token = await userUseCases.checkCredentials(userCredencials);
       res.status(200).json({
         message: "Usuario logueado correctamente",
+        token,
       });
     } catch (error) {
       if (error instanceof Error) {

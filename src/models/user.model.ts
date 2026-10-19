@@ -7,7 +7,6 @@ interface User {
   password: string;
   active: boolean;
 }
-
 const userSchema = new Schema<User>(
   {
     name: {

@@ -3,10 +3,16 @@ import { productControllers } from "./controllers/product.controller";
 import { validateProductBody } from "./middleware/product.middleware";
 import { connectDB } from "./config/connectDb";
 import { userControllers } from "./controllers/user.controller";
+import cors from "cors";
 
 const app = express();
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.post("/user", userControllers.create);
 app.post("/user/login", userControllers.checkCredentials);
