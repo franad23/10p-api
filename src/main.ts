@@ -3,6 +3,7 @@ import { productControllers } from "./controllers/product.controller";
 import { validateProductBody } from "./middleware/product.middleware";
 import { connectDB } from "./config/connectDb";
 import { userControllers } from "./controllers/user.controller";
+import { categoryControllers } from "./controllers/category.controller";
 import cors from "cors";
 
 const app = express();
@@ -22,6 +23,12 @@ app.post("/product", validateProductBody, productControllers.create);
 app.get("/product/:id", productControllers.getById);
 app.patch("/product/:id", productControllers.update);
 // app.get("/product", productControllers.list);
+
+app.get("/category", categoryControllers.list);
+app.post("/category", categoryControllers.create);
+app.get("/category/:id", categoryControllers.getById);
+app.patch("/category/:id", categoryControllers.update);
+app.delete("/category/:id", categoryControllers.delete);
 
 const PORT = 3000;
 connectDB();
