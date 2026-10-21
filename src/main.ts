@@ -5,6 +5,7 @@ import { connectDB } from "./config/connectDb";
 import { userControllers } from "./controllers/user.controller";
 import { categoryControllers } from "./controllers/category.controller";
 import cors from "cors";
+import { categoryRouter } from "./routes/category.router";
 
 const app = express();
 
@@ -24,11 +25,7 @@ app.get("/product/:id", productControllers.getById);
 app.patch("/product/:id", productControllers.update);
 // app.get("/product", productControllers.list);
 
-app.get("/category", categoryControllers.list);
-app.post("/category", categoryControllers.create);
-app.get("/category/:id", categoryControllers.getById);
-app.patch("/category/:id", categoryControllers.update);
-app.delete("/category/:id", categoryControllers.delete);
+app.use("/category", categoryRouter);
 
 const PORT = 3000;
 connectDB();
