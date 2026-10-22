@@ -28,6 +28,7 @@ const categoryControllers = {
           });
         }
       }
+      console.log(error);
       res.status(500).json({
         message: "Categoria no creada",
       });
