@@ -9,12 +9,14 @@ const productsServices = {
   getById: async (id: string): Promise<Product | null> => {
     return await ProductModel.findById(id);
   },
-  update: async (id: string, product: Product) => {
+  update: async (id: string, product: Omit<Product, "createdBy_id">) => {
     await ProductModel.findByIdAndUpdate(id, product);
   },
-  // list: (): Product[] => {
-  //   return productsData;
-  // },
+  list: async (): Promise<Product[]> => {
+    return await ProductModel.find()
+      .populate("category_id", "name")
+      .populate("createdBy_id", "name lastname");
+  },
   // deleteById: (id: number) => {
   //   const newData = productsData.filter((product) => product.id !== id);
   //   productsData = newData;

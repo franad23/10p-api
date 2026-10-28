@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
 
 interface Product {
   name: string;
@@ -6,6 +6,8 @@ interface Product {
   currency: CURRENCY;
   stock: number;
   active: boolean;
+  category_id: Types.ObjectId;
+  createdBy_id: Types.ObjectId;
 }
 
 enum CURRENCY {
@@ -35,6 +37,16 @@ const productSchema = new Schema<Product>(
     active: {
       type: Boolean,
       required: true,
+    },
+    category_id: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "Category",
+    },
+    createdBy_id: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
     },
   },
   {

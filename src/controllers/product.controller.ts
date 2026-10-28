@@ -3,14 +3,14 @@ import { productUseCases } from "../useCases/product.useCases";
 import { Product } from "../models/product.model";
 
 const productControllers = {
-  // list: (req: Request, res: Response) => {
-  //   try {
-  //     const productsFound = productUseCases.list();
-  //     res.status(200).json(productsFound);
-  //   } catch (error) {
-  //     res.status(500).json(error);
-  //   }
-  // },
+  list: async (req: Request, res: Response) => {
+    try {
+      const productsFound = await productUseCases.list();
+      res.status(200).json(productsFound);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  },
   create: (req: Request, res: Response) => {
     try {
       const product: Product = req.body;

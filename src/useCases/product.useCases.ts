@@ -2,9 +2,9 @@ import { Product } from "../models/product.model";
 import { productsServices } from "../services/product.service";
 
 const productUseCases = {
-  // list: (): Product[] => {
-  //   return productsServices.list();
-  // },
+  list: async (): Promise<Product[]> => {
+    return await productsServices.list();
+  },
   getById: async (id: string): Promise<Product> => {
     const productFound = await productsServices.getById(id);
     if (!productFound) {
@@ -15,7 +15,7 @@ const productUseCases = {
   create: async (product: Product) => {
     await productsServices.create(product);
   },
-  update: async (id: string, product: Product) => {
+  update: async (id: string, product: Omit<Product, "createdBy_id">) => {
     await productsServices.update(id, product);
   },
   // deleteById: (id: number) => {
