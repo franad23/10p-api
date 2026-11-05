@@ -12,10 +12,22 @@ const productsServices = {
   update: async (id: string, product: Omit<Product, "createdBy_id">) => {
     await ProductModel.findByIdAndUpdate(id, product);
   },
-  list: async (): Promise<Product[]> => {
-    return await ProductModel.find()
+  list: async (
+    page: number,
+    limit: number,
+    name?: string,
+  ): Promise<{ results: Product[]; total: number }> => {
+    const filter = name
+      ? { name: { $regex: name, $options: "i" } }
+      : {};
+    const results = await ProductModel.find(filter)
       .populate("category_id", "name")
-      .populate("createdBy_id", "name lastname");
+      .populate("createdBy_id", "name lastname")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+    const total = await ProductModel.countDocuments(filter);
+    return { results, total };
   },
   // deleteById: (id: number) => {
   //   const newData = productsData.filter((product) => product.id !== id);

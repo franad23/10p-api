@@ -7,6 +7,7 @@ import { categoryControllers } from "./controllers/category.controller";
 import cors from "cors";
 import { categoryRouter } from "./routes/category.router";
 import { validator } from "./middleware/validator";
+import { uploadProductImage } from "./middleware/upload.middleware";
 
 const app = express();
 
@@ -20,7 +21,13 @@ app.use(
 app.post("/user", userControllers.create);
 app.post("/user/login", userControllers.checkCredentials);
 
-app.post("/product", validateProductBody, validator, productControllers.create);
+app.post(
+  "/product",
+  uploadProductImage,
+  validateProductBody,
+  validator,
+  productControllers.create,
+);
 // app.delete("/product/:id", productControllers.delete);
 app.get("/product/:id", productControllers.getById);
 app.patch("/product/:id", productControllers.update);

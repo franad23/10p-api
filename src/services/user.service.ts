@@ -1,10 +1,13 @@
+import { HydratedDocument } from "mongoose";
 import { UserModel, User } from "../models/user.model";
 
 const userServices = {
   create: async (user: User) => {
     await UserModel.create(user);
   },
-  findByEmail: async (email: string): Promise<User | null> => {
+  findByEmail: async (
+    email: string,
+  ): Promise<HydratedDocument<User> | null> => {
     const userFound = await UserModel.findOne({
       email,
     });

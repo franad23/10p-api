@@ -1,5 +1,10 @@
 import { model, Schema, Types } from "mongoose";
 
+interface ProductImage {
+  url: string;
+  public_id: string;
+}
+
 interface Product {
   name: string;
   price: number;
@@ -8,6 +13,7 @@ interface Product {
   active: boolean;
   category_id: Types.ObjectId;
   createdBy_id: Types.ObjectId;
+  image: ProductImage;
 }
 
 enum CURRENCY {
@@ -48,6 +54,16 @@ const productSchema = new Schema<Product>(
       required: true,
       ref: "User",
     },
+    image: {
+      url: {
+        type: String,
+        required: true,
+      },
+      public_id: {
+        type: String,
+        required: true,
+      },
+    },
   },
   {
     timestamps: true,
@@ -56,5 +72,5 @@ const productSchema = new Schema<Product>(
 
 const ProductModel = model<Product>("Product", productSchema);
 
-export type { Product, CURRENCY };
+export type { Product, ProductImage, CURRENCY };
 export { ProductModel };

@@ -1,25 +1,31 @@
 import { Request, Response } from "express";
 import { productUseCases } from "../useCases/product.useCases";
 import { Product } from "../models/product.model";
+import { cloudinaryService } from "../services/cloudinary.service";
 
 const productControllers = {
   list: async (req: Request, res: Response) => {
     try {
-      const productsFound = await productUseCases.list();
+      const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+      const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
+      const name = (req.query.name as string) || undefined;
+      const productsFound = await productUseCases.list(page, limit, name);
       res.status(200).json(productsFound);
     } catch (error) {
       res.status(500).json(error);
     }
   },
-  create: (req: Request, res: Response) => {
+  create: async (req: Request, res: Response) => {
     try {
-      const product: Product = req.body;
+      const image = await cloudinaryService.uploadImage(req.file!.buffer);
+      const product: Product = { ...req.body, image };
 
-      productUseCases.create(product);
+      await productUseCases.create(product);
       res.status(200).json({
         message: "Producto creado con exito",
       });
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   },

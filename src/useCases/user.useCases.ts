@@ -33,6 +33,7 @@ const userUseCases = {
     }
     const token = jwt.sign(
       {
+        id: userExists._id,
         name: userExists.name,
         lastname: userExists.lastname,
         email: userExists.email,
