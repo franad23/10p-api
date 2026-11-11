@@ -1,5 +1,5 @@
 import { body } from "express-validator";
-import { CURRENCY, Product } from "../data/products";
+import { CURRENCY } from "../data/products";
 
 // function validateProductBody(req, res, next) {
 //   const product: Product = req.body;
@@ -76,12 +76,6 @@ const validateProductBody = [
     .isMongoId()
     .withMessage("El campo categoría debe ser un MongoId"),
 
-  body("createdBy_id")
-    .notEmpty()
-    .withMessage("El campo usuario es obligatorio")
-    .bail()
-    .isMongoId()
-    .withMessage("El campo usuario debe ser un MongoId"),
 ];
 
 export { validateProductBody };

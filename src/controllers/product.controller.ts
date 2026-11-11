@@ -18,7 +18,11 @@ const productControllers = {
   create: async (req: Request, res: Response) => {
     try {
       const image = await cloudinaryService.uploadImage(req.file!.buffer);
-      const product: Product = { ...req.body, image };
+      const product: Product = {
+        ...req.body,
+        createdBy_id: req.user!.id,
+        image,
+      };
 
       await productUseCases.create(product);
       res.status(200).json({

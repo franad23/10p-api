@@ -29,6 +29,16 @@ const productsServices = {
     const total = await ProductModel.countDocuments(filter);
     return { results, total };
   },
+  decreaseStock: async (items: Array<{ product_id: unknown; quantity: number }>) => {
+    await ProductModel.bulkWrite(
+      items.map((item) => ({
+        updateOne: {
+          filter: { _id: item.product_id },
+          update: { $inc: { stock: -item.quantity } },
+        },
+      })),
+    );
+  },
   // deleteById: (id: number) => {
   //   const newData = productsData.filter((product) => product.id !== id);
   //   productsData = newData;

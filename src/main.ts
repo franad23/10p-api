@@ -2,12 +2,15 @@ import express from "express";
 import { productControllers } from "./controllers/product.controller";
 import { validateProductBody } from "./middleware/product.middleware";
 import { connectDB } from "./config/connectDb";
-import { userControllers } from "./controllers/user.controller";
-import { categoryControllers } from "./controllers/category.controller";
 import cors from "cors";
 import { categoryRouter } from "./routes/category.router";
 import { validator } from "./middleware/validator";
 import { uploadProductImage } from "./middleware/upload.middleware";
+import { authorizeRoles, verifyToken } from "./middleware/jwt";
+import { USER_ROLE } from "./models/user.model";
+import { orderRouter } from "./routes/order.router";
+import { paymentRouter } from "./routes/payment.router";
+import { userRouter } from "./routes/user.router";
 
 const app = express();
 
@@ -18,11 +21,12 @@ app.use(
   }),
 );
 
-app.post("/user", userControllers.create);
-app.post("/user/login", userControllers.checkCredentials);
+app.use("/user", userRouter);
 
 app.post(
   "/product",
+  verifyToken,
+  authorizeRoles(USER_ROLE.ADMIN),
   uploadProductImage,
   validateProductBody,
   validator,
@@ -30,12 +34,19 @@ app.post(
 );
 // app.delete("/product/:id", productControllers.delete);
 app.get("/product/:id", productControllers.getById);
-app.patch("/product/:id", productControllers.update);
+app.patch(
+  "/product/:id",
+  verifyToken,
+  authorizeRoles(USER_ROLE.ADMIN),
+  productControllers.update,
+);
 app.get("/product", productControllers.list);
 
 app.use("/category", categoryRouter);
+app.use("/order", orderRouter);
+app.use("/payment", paymentRouter);
 
-const PORT = 3000;
+const PORT = 3001;
 connectDB();
 app.listen(PORT, async () => {
   console.log(`Server corriendo en http://localhost:${PORT}`);

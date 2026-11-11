@@ -72,5 +72,5 @@ const productSchema = new Schema<Product>(
 
 const ProductModel = model<Product>("Product", productSchema);
 
-export type { Product, ProductImage, CURRENCY };
-export { ProductModel };
+export type { Product, ProductImage };
+export { CURRENCY, ProductModel };

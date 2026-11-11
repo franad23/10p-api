@@ -1,11 +1,17 @@
 import { model, Schema } from "mongoose";
 
+enum USER_ROLE {
+  ADMIN = "ADMIN",
+  CLIENT = "CLIENT",
+}
+
 interface User {
   name: string;
   lastname: string;
   email: string;
   password: string;
   active: boolean;
+  role: USER_ROLE;
 }
 const userSchema = new Schema<User>(
   {
@@ -31,10 +37,16 @@ const userSchema = new Schema<User>(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: Object.values(USER_ROLE),
+      required: true,
+      default: USER_ROLE.CLIENT,
+    },
   },
   { timestamps: true },
 );
 
 const UserModel = model<User>("User", userSchema);
 export type { User };
-export { UserModel };
+export { USER_ROLE, UserModel };

@@ -13,6 +13,28 @@ const userServices = {
     });
     return userFound;
   },
+  findById: async (id: string) => {
+    return await UserModel.findById(id).select("-password");
+  },
+  list: async () => {
+    return await UserModel.find()
+      .select("-password")
+      .sort({ createdAt: -1 });
+  },
+  updateRole: async (id: string, role: User["role"]) => {
+    return await UserModel.findByIdAndUpdate(
+      id,
+      { role },
+      { new: true, runValidators: true },
+    ).select("-password");
+  },
+  updateActive: async (id: string, active: boolean) => {
+    return await UserModel.findByIdAndUpdate(
+      id,
+      { active },
+      { new: true, runValidators: true },
+    ).select("-password");
+  },
 };
 
 export { userServices };
