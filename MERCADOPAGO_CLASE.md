@@ -19,11 +19,15 @@ Nunca se debe colocar el Access Token en el frontend ni subir `.env` a Git.
 
 ```env
 MP_ACCESS_TOKEN=APP_USR-...
+MP_WEBHOOK_SECRET=...
 APP_URL=https://URL_PUBLICA
 ```
 
 `APP_URL` es opcional. Para volver automáticamente desde Mercado Pago debe ser
 una URL HTTPS pública. Sin ella se puede regresar manualmente a la app local.
+`MP_WEBHOOK_SECRET` se obtiene después de registrar
+`https://TU_API/payment/webhook` en la configuración de Webhooks de Mercado
+Pago. La API puede iniciar sin esta variable, pero el webhook responderá `503`.
 
 ## 3. Preparar los datos
 
@@ -100,6 +104,17 @@ GET /payment/failure
 
 Estas rutas solamente informan el resultado visual. No modifican la orden.
 
+La confirmación automática se recibe en:
+
+```text
+POST /payment/webhook
+```
+
+El backend valida la firma `x-signature`, consulta el pago informado y verifica
+su estado, referencia externa, monto y moneda. Solo entonces cambia la orden a
+`PAID` y descuenta el stock. Mercado Pago puede repetir una notificación sin
+provocar un segundo descuento.
+
 La consulta manual ocurre así:
 
 1. El cliente presiona **Consultar pago en Mercado Pago**.
@@ -108,6 +123,8 @@ La consulta manual ocurre así:
 4. Verifica `status`, `external_reference`, monto y moneda.
 5. Cambia la orden de `PENDING` a `PAID`.
 6. Descuenta el stock una sola vez.
+
+La consulta manual queda disponible como respaldo del webhook.
 
 Para comprobarlo, consultar el historial:
 

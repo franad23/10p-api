@@ -3,6 +3,7 @@ import { USER_ROLE } from "../models/user.model";
 import { mercadoPagoServices } from "../services/mercadopago.service";
 import { orderServices } from "../services/order.service";
 import { productsServices } from "../services/product.service";
+import { isValidObjectId } from "mongoose";
 
 function getOwnerId(userId: unknown) {
   if (typeof userId === "object" && userId && "_id" in userId) {
@@ -70,6 +71,40 @@ const paymentUseCases = {
     );
     if (paidOrder) await productsServices.decreaseStock(paidOrder.items);
     return paidOrder;
+  },
+  processWebhook: async (paymentId: string) => {
+    const payment = await mercadoPagoServices.getPayment(paymentId);
+
+    if (payment.status !== "approved") {
+      return { processed: false, status: payment.status };
+    }
+
+    const orderId = payment.external_reference;
+    if (!orderId || !isValidObjectId(orderId)) {
+      throw new Error("PAYMENT-WITHOUT-VALID-ORDER");
+    }
+
+    const order = await orderServices.getById(orderId);
+    if (!order) throw new Error("ORDER-NOT-FOUND");
+    if (
+      order.total !== payment.transaction_amount ||
+      order.currency !== payment.currency_id
+    ) {
+      throw new Error("PAYMENT-DATA-MISMATCH");
+    }
+
+    if (order.status === ORDER_STATUS.PAID) {
+      return { processed: false, status: payment.status };
+    }
+
+    const paidOrder = await orderServices.markAsPaid(
+      String(order._id),
+      String(payment.id),
+    );
+    if (!paidOrder) return { processed: false, status: payment.status };
+
+    await productsServices.decreaseStock(paidOrder.items);
+    return { processed: true, status: payment.status };
   },
 };
 

@@ -4,6 +4,7 @@ import { verifyToken } from "../middleware/jwt";
 
 const paymentRouter = Router();
 
+paymentRouter.post("/webhook", paymentControllers.webhook);
 paymentRouter.get("/success", paymentControllers.success);
 paymentRouter.get("/pending", paymentControllers.pending);
 paymentRouter.get("/failure", paymentControllers.failure);

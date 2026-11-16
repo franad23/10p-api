@@ -1,3 +1,5 @@
+import { createHmac, timingSafeEqual } from "crypto";
+
 const MP_API_URL = "https://api.mercadopago.com";
 
 interface CheckoutOrder {
@@ -81,6 +83,41 @@ const mercadoPagoServices = {
     });
     return await mpRequest<MercadoPagoPaymentSearch>(
       `/v1/payments/search?${params.toString()}`,
+    );
+  },
+  getPayment: async (paymentId: string) => {
+    return await mpRequest<MercadoPagoPayment>(
+      `/v1/payments/${encodeURIComponent(paymentId)}`,
+    );
+  },
+  validateWebhookSignature: (
+    xSignature: string,
+    xRequestId: string,
+    dataId: string,
+  ) => {
+    const secret = process.env.MP_WEBHOOK_SECRET;
+    if (!secret) throw new Error("MP-WEBHOOK-NOT-CONFIGURED");
+
+    const signatureParts = Object.fromEntries(
+      xSignature.split(",").map((part) => {
+        const [key, ...value] = part.trim().split("=");
+        return [key, value.join("=")];
+      }),
+    );
+    const timestamp = signatureParts.ts;
+    const receivedHash = signatureParts.v1;
+    if (!timestamp || !receivedHash) return false;
+
+    const manifest = `id:${dataId.toLowerCase()};request-id:${xRequestId};ts:${timestamp};`;
+    const expectedHash = createHmac("sha256", secret)
+      .update(manifest)
+      .digest("hex");
+    const receivedBuffer = Buffer.from(receivedHash, "utf8");
+    const expectedBuffer = Buffer.from(expectedHash, "utf8");
+
+    return (
+      receivedBuffer.length === expectedBuffer.length &&
+      timingSafeEqual(receivedBuffer, expectedBuffer)
     );
   },
 };

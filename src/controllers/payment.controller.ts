@@ -1,7 +1,63 @@
 import { Request, Response } from "express";
 import { paymentUseCases } from "../useCases/payment.useCases";
+import { mercadoPagoServices } from "../services/mercadopago.service";
 
 const paymentControllers = {
+  webhook: async (req: Request, res: Response) => {
+    const dataIdQuery = req.query["data.id"];
+    const dataId =
+      typeof dataIdQuery === "string"
+        ? dataIdQuery
+        : typeof req.body?.data?.id === "string" ||
+            typeof req.body?.data?.id === "number"
+          ? String(req.body.data.id)
+          : undefined;
+    const notificationType =
+      typeof req.query.type === "string" ? req.query.type : req.body?.type;
+    const xSignature = req.header("x-signature");
+    const xRequestId = req.header("x-request-id");
+
+    if (notificationType !== "payment") {
+      return res.status(200).json({ received: true, ignored: true });
+    }
+    if (!dataId || !xSignature || !xRequestId) {
+      return res.status(400).json({ message: "Notificación incompleta" });
+    }
+
+    try {
+      const validSignature = mercadoPagoServices.validateWebhookSignature(
+        xSignature,
+        xRequestId,
+        dataId,
+      );
+      if (!validSignature) {
+        return res.status(401).json({ message: "Firma inválida" });
+      }
+
+      const result = await paymentUseCases.processWebhook(dataId);
+      return res.status(200).json({ received: true, ...result });
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "MP-WEBHOOK-NOT-CONFIGURED"
+      ) {
+        return res.status(503).json({ message: "Webhook no configurado" });
+      }
+      if (
+        error instanceof Error &&
+        [
+          "PAYMENT-WITHOUT-VALID-ORDER",
+          "ORDER-NOT-FOUND",
+          "PAYMENT-DATA-MISMATCH",
+        ].includes(error.message)
+      ) {
+        return res
+          .status(409)
+          .json({ message: "El pago no coincide con una orden" });
+      }
+      return res.status(502).json({ message: "No se pudo procesar el pago" });
+    }
+  },
   success: (req: Request, res: Response) => {
     res.status(200).json({
       message: "Mercado Pago informó un pago exitoso",
