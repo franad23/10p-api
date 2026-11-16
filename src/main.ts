@@ -13,13 +13,30 @@ import { paymentRouter } from "./routes/payment.router";
 import { userRouter } from "./routes/user.router";
 
 const app = express();
+const localFrontendUrl = "http://localhost:5173";
+const configuredFrontendUrl = process.env.FRONTEND_URL ?? process.env.APP_URL;
+const allowedOrigins = new Set(
+  [localFrontendUrl, configuredFrontendUrl]
+    .filter((origin): origin is string => Boolean(origin))
+    .map((origin) => origin.replace(/\/$/, "")),
+);
 
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Las llamadas servidor-a-servidor, como el webhook, no envían Origin.
+      if (!origin || allowedOrigins.has(origin.replace(/\/$/, ""))) {
+        return callback(null, true);
+      }
+      return callback(new Error("Origen no permitido por CORS"));
+    },
   }),
 );
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.use("/user", userRouter);
 
@@ -46,8 +63,16 @@ app.use("/category", categoryRouter);
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);
 
-const PORT = 3001;
-connectDB();
-app.listen(PORT, async () => {
-  console.log(`Server corriendo en http://localhost:${PORT}`);
+const port = Number(process.env.PORT) || 3001;
+
+async function startServer() {
+  await connectDB();
+  app.listen(port, () => {
+    console.log(`Server corriendo en el puerto ${port}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("No se pudo iniciar el servidor", error);
+  process.exit(1);
 });
