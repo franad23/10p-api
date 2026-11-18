@@ -8,6 +8,7 @@ import { uploadProductImage } from "./middleware/upload.middleware";
 import { validator } from "./middleware/validator";
 import { USER_ROLE } from "./models/user.model";
 import { categoryRouter } from "./routes/category.router";
+import { chatRouter } from "./routes/chat.router";
 import { orderRouter } from "./routes/order.router";
 import { paymentRouter } from "./routes/payment.router";
 import { userRouter } from "./routes/user.router";
@@ -69,6 +70,7 @@ app.patch(
 app.get("/product", productControllers.list);
 
 app.use("/category", categoryRouter);
+app.use("/chat", chatRouter);
 app.use("/order", orderRouter);
 app.use("/payment", paymentRouter);
 

@@ -13,7 +13,7 @@ interface Product {
   active: boolean;
   category_id: Types.ObjectId;
   createdBy_id: Types.ObjectId;
-  image: ProductImage;
+  image?: ProductImage;
 }
 
 enum CURRENCY {
@@ -55,14 +55,17 @@ const productSchema = new Schema<Product>(
       ref: "User",
     },
     image: {
-      url: {
-        type: String,
-        required: true,
+      type: {
+        url: {
+          type: String,
+          required: true,
+        },
+        public_id: {
+          type: String,
+          required: true,
+        },
       },
-      public_id: {
-        type: String,
-        required: true,
-      },
+      required: false,
     },
   },
   {

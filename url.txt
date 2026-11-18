@@ -1,0 +1,1 @@
+https://10p-front-3er-modulo-chi.vercel.app/payment/success?collection_id=190039623284&collection_status=approved&payment_id=190039623284&status=approved&external_reference=6afb9135696af4df714df5f3&payment_type=account_money&merchant_order_id=46177613587&preference_id=3433470370-d5bc3ec8-f466-451d-b52b-e045651b192c&site_id=MLA&processing_mode=aggregator&merchant_account_id=null

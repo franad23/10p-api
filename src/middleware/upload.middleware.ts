@@ -22,9 +22,6 @@ function uploadProductImage(req: Request, res: Response, next: NextFunction) {
     if (error) {
       return res.status(400).json({ message: "El archivo debe ser una imagen" });
     }
-    if (!req.file) {
-      return res.status(400).json({ message: "La imagen del producto es obligatoria" });
-    }
     next();
   });
 }
