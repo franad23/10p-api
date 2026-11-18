@@ -15,6 +15,7 @@ const chatControllers = {
     try {
       const answer = await chatUseCases.ask(message, {
         id: req.user!.id,
+        email: req.user!.email,
         role: req.user!.role,
       });
       return res.status(200).json({ answer });

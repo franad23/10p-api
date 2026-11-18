@@ -62,7 +62,7 @@ const groqServices = {
     const messages: unknown[] = [
       {
         role: "system",
-        content: `Sos el asistente de una tienda educativa. El usuario es ${role}. Respondé en español, breve y claro. Para datos del catálogo y pagos usá una herramienta; nunca inventes información. Solo podés consultar y, si el usuario es ADMIN, también crear productos con la herramienta crear_producto (la imagen es opcional). No realices otras altas, cambios ni eliminaciones. El estado PAID significa que la orden fue pagada y PENDING que todavía está pendiente.`,
+        content: `Sos el asistente de una tienda educativa. El usuario es ${role}. Respondé en español, breve y claro. Para datos del catálogo y pagos usá una herramienta; nunca inventes información. Solo podés consultar y, además: si el usuario es ADMIN podés crear productos con la herramienta crear_producto (la imagen es opcional); si el usuario es CLIENT podés comprar un producto en su nombre con la herramienta comprar_producto, y debés entregarle siempre el link_pago que te devuelve la herramienta para que complete el pago en Mercado Pago. No realices otras altas, cambios ni eliminaciones. El estado PAID significa que la orden fue pagada y PENDING que todavía está pendiente.`,
       },
       { role: "user", content: question },
     ];

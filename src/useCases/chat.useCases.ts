@@ -4,6 +4,8 @@ import { ORDER_STATUS, Order, OrderModel } from "../models/order.model";
 import { CURRENCY, Product, ProductModel } from "../models/product.model";
 import { USER_ROLE, UserModel } from "../models/user.model";
 import { groqServices, ToolDefinition } from "../services/groq.service";
+import { orderUseCases } from "./order.useCases";
+import { paymentUseCases } from "./payment.useCases";
 
 function text(value: unknown) {
   return typeof value === "string" ? value.trim() : undefined;
@@ -77,6 +79,24 @@ const adminOrdersTool: ToolDefinition = {
         estado: { type: "string", enum: ["PENDING", "PAID", "CANCELLED"] },
         limite: { type: "integer", minimum: 1, maximum: 20 },
       },
+      additionalProperties: false,
+    },
+  },
+};
+
+const buyProductTool: ToolDefinition = {
+  type: "function",
+  function: {
+    name: "comprar_producto",
+    description:
+      "Crea una orden de compra para el cliente autenticado con un producto del catálogo y genera el link de pago de Mercado Pago. Disponible solo para clientes.",
+    parameters: {
+      type: "object",
+      properties: {
+        producto: { type: "string", description: "Nombre (o parte del nombre) del producto a comprar" },
+        cantidad: { type: "integer", minimum: 1, description: "Cantidad a comprar, por defecto 1" },
+      },
+      required: ["producto"],
       additionalProperties: false,
     },
   },
@@ -157,6 +177,66 @@ async function findOrders(args: Record<string, unknown>, userId?: string) {
     .lean();
 }
 
+async function buyProduct(
+  args: Record<string, unknown>,
+  user: { id: string; email: string },
+) {
+  const name = text(args.producto);
+  if (!name) return { error: "Indicá qué producto querés comprar" };
+
+  const quantity = Math.max(Math.trunc(Number(args.cantidad) || 1), 1);
+
+  const matches = await ProductModel.find({ name: regex(name), active: true })
+    .select("name price currency stock")
+    .limit(5)
+    .lean();
+
+  if (matches.length === 0) {
+    return { error: `No encontré ningún producto activo que coincida con "${name}"` };
+  }
+  if (matches.length > 1) {
+    return {
+      error: "Hay más de un producto que coincide, pedile al usuario que precise cuál quiere",
+      opciones: matches.map((item) => ({ nombre: item.name, precio: item.price, moneda: item.currency })),
+    };
+  }
+
+  const product = matches[0];
+  if (quantity > product.stock) {
+    return { error: `No hay stock suficiente de "${product.name}" (disponible: ${product.stock})` };
+  }
+
+  try {
+    const order = await orderUseCases.create(user.id, [
+      { product_id: String(product._id), quantity },
+    ]);
+
+    const checkout = await paymentUseCases.createCheckout(
+      String(order._id),
+      user.id,
+      USER_ROLE.CLIENT,
+      user.email,
+    );
+
+    return {
+      orden_id: order._id,
+      producto: product.name,
+      cantidad: quantity,
+      total: order.total,
+      moneda: order.currency,
+      link_pago: checkout.init_point,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === "INSUFFICIENT-STOCK") {
+      return { error: `No hay stock suficiente de "${product.name}"` };
+    }
+    if (error instanceof Error && error.message === "MP-NOT-CONFIGURED") {
+      return { error: "Mercado Pago no está configurado, no se puede generar el link de pago" };
+    }
+    return { error: "No se pudo generar la orden de compra, intentá de nuevo" };
+  }
+}
+
 async function createProduct(args: Record<string, unknown>, createdBy: string) {
   const name = text(args.nombre);
   const categoryName = text(args.categoria);
@@ -199,11 +279,11 @@ async function createProduct(args: Record<string, unknown>, createdBy: string) {
 }
 
 const chatUseCases = {
-  ask: async (message: string, user: { id: string; role: USER_ROLE }) => {
+  ask: async (message: string, user: { id: string; email: string; role: USER_ROLE }) => {
     const tools = [
       ...commonTools,
       user.role === USER_ROLE.ADMIN ? adminOrdersTool : myOrdersTool,
-      ...(user.role === USER_ROLE.ADMIN ? [createProductTool] : []),
+      ...(user.role === USER_ROLE.ADMIN ? [createProductTool] : [buyProductTool]),
     ];
 
     return await groqServices.askWithTools(message, user.role, tools, async (name, args) => {
@@ -217,6 +297,9 @@ const chatUseCases = {
       }
       if (name === "crear_producto" && user.role === USER_ROLE.ADMIN) {
         return await createProduct(args, user.id);
+      }
+      if (name === "comprar_producto" && user.role === USER_ROLE.CLIENT) {
+        return await buyProduct(args, user);
       }
       throw new Error("TOOL-NOT-ALLOWED");
     });
